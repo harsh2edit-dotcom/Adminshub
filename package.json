@@ -1,0 +1,26 @@
+{
+  "name": "xyven-world",
+  "version": "1.0.0",
+  "description": "XYVEN WORLD — premium futuristic cybersecurity command center interface.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "xyven",
+    "cyber",
+    "terminal",
+    "dashboard",
+    "express"
+  ],
+  "author": "XYVEN",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.4.0"
+  }
+}
