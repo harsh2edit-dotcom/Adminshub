@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#03060a" />
+<meta name="description" content="XYVEN WORLD — premium secure command interface." />
+<title>XYVEN WORLD // SECURE INTERFACE</title>
+<style>
+:root{
+  --bg:#03060a;--neon:#00ff9c;--neon-dim:rgba(0,255,156,.28);
+  --red:#ff2b3d;--red-bright:#ff4d5e;--orange:#ff9a2e;
+  --txt:#d9f8ea;--muted:#5f7d72;--glass:rgba(7,16,20,.55);
+  --edge:rgba(0,255,156,.22);--edge-red:rgba(255,43,61,.35);--radius:16px;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--mono);font-size:14px;line-height:1.55;overflow-x:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(900px 600px at 12% 8%,rgba(0,255,156,.09),transparent 62%),radial-gradient(800px 620px at 88% 92%,rgba(255,43,61,.10),transparent 60%),radial-gradient(1200px 800px at 50% 50%,rgba(6,12,20,.6),transparent 70%),linear-gradient(180deg,#03060a 0%,#04070c 50%,#03060a 100%)}
+button,input,select{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+.hidden{display:none !important}
+::selection{background:rgba(0,255,156,.28);color:#eafff6}
+#matrix,.fx{position:fixed;inset:0;pointer-events:none}
+#matrix{z-index:1;opacity:.16}
+.fx-grid{z-index:1;opacity:.35;background-image:linear-gradient(rgba(0,255,156,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,156,.055) 1px,transparent 1px);background-size:54px 54px;animation:gridMove 22s linear infinite;mask-image:radial-gradient(circle at 50% 45%,#000 0%,transparent 78%);-webkit-mask-image:radial-gradient(circle at 50% 45%,#000 0%,transparent 78%)}
+@keyframes gridMove{from{background-position:0 0,0 0}to{background-position:0 54px,54px 0}}
+.fx-scan{z-index:6;opacity:.4;background:repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0px,rgba(0,0,0,0) 2px,rgba(0,0,0,.28) 3px,rgba(0,0,0,.28) 4px);mix-blend-mode:multiply}
+.fx-scan::after{content:"";position:absolute;left:0;right:0;height:28%;background:linear-gradient(180deg,transparent,rgba(0,255,156,.055),transparent);animation:sweep 7s linear infinite}
+@keyframes sweep{0%{top:-30%}100%{top:105%}}
+.fx-vig{z-index:5;background:radial-gradient(ellipse at center,transparent 42%,rgba(0,0,0,.72) 100%)}
+.fx-noise{z-index:5;opacity:.035;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='.6'/></svg>");animation:noiseShift .6s steps(2) infinite}
+@keyframes noiseShift{0%{transform:translate(0,0)}50%{transform:translate(-2%,1%)}100%{transform:translate(1%,-1%)}}
+
+.stage{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:clamp(16px,4vw,48px);overflow-y:auto;overscroll-behavior:contain;opacity:0;visibility:hidden;transform:translateY(14px) scale(.985);transition:opacity .5s ease,transform .5s cubic-bezier(.22,1,.36,1),visibility .5s}
+.stage.active{opacity:1;visibility:visible;transform:none}
+.wrap{width:100%;max-width:1060px;margin:auto}
+.wrap-narrow{max-width:720px}
+
+.panel{position:relative;background:var(--glass);border:1px solid var(--edge);border-radius:var(--radius);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);box-shadow:0 0 0 1px rgba(0,0,0,.5) inset,0 22px 60px rgba(0,0,0,.6),0 0 42px rgba(0,255,156,.06);padding:clamp(18px,3vw,34px)}
+.panel::before{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;background:linear-gradient(135deg,rgba(0,255,156,.35),transparent 30%,transparent 70%,rgba(255,43,61,.28));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;padding:1px;opacity:.6}
+.corner{position:absolute;width:16px;height:16px;border:1px solid var(--neon);opacity:.65}
+.corner.tl{top:8px;left:8px;border-right:0;border-bottom:0}
+.corner.tr{top:8px;right:8px;border-left:0;border-bottom:0}
+.corner.bl{bottom:8px;left:8px;border-right:0;border-top:0}
+.corner.br{bottom:8px;right:8px;border-left:0;border-top:0}
+
+.eyebrow{font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.eyebrow::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,var(--neon),transparent)}
+h1,h2,h3{margin:0;font-weight:700;letter-spacing:.02em}
+h1{font-size:clamp(22px,4.4vw,40px);line-height:1.14}
+h2{font-size:clamp(17px,2.6vw,24px)}
+h3{font-size:13px;letter-spacing:.22em;text-transform:uppercase;color:var(--neon)}
+.lead{color:#a9c9bd;font-size:clamp(12.5px,1.6vw,14.5px);max-width:70ch}
+.neon{color:var(--neon);text-shadow:0 0 12px rgba(0,255,156,.55)}
+.red{color:var(--red);text-shadow:0 0 12px rgba(255,43,61,.5)}
+.orange{color:var(--orange);text-shadow:0 0 12px rgba(255,154,46,.45)}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+
+/* ===== TAP TO START ===== */
+#stage-tap{background:#000;z-index:12}
+.tap-btn{position:relative;padding:22px 46px;border-radius:16px;border:2px solid var(--red);background:linear-gradient(180deg,rgba(255,43,61,.20),rgba(255,43,61,.04));color:#fff;font-weight:800;letter-spacing:.28em;font-size:14px;text-transform:uppercase;box-shadow:0 0 44px rgba(255,43,61,.6),0 0 100px rgba(255,43,61,.30),inset 0 0 30px rgba(255,43,61,.18);animation:tapPulse 1.8s ease-in-out infinite;cursor:pointer}
+@keyframes tapPulse{0%,100%{transform:scale(1);box-shadow:0 0 44px rgba(255,43,61,.6),0 0 100px rgba(255,43,61,.30),inset 0 0 30px rgba(255,43,61,.18)}50%{transform:scale(1.045);box-shadow:0 0 60px rgba(255,43,61,.9),0 0 140px rgba(255,43,61,.5),inset 0 0 44px rgba(255,43,61,.30)}}
+.tap-tag{margin-top:34px;font-size:11px;letter-spacing:.38em;color:#7a464c;text-transform:uppercase}
+.tap-frame{position:absolute;inset:14px;border:1px dashed rgba(255,43,61,.28);border-radius:12px;pointer-events:none}
+.tap-corner{position:absolute;width:22px;height:22px;border:2px solid var(--red);opacity:.75}
+.tap-corner.tl{top:20px;left:20px;border-right:0;border-bottom:0}
+.tap-corner.tr{top:20px;right:20px;border-left:0;border-bottom:0}
+.tap-corner.bl{bottom:20px;left:20px;border-right:0;border-top:0}
+.tap-corner.br{bottom:20px;right:20px;border-left:0;border-top:0}
+
+/* ===== DRAGON INTRO ===== */
+#stage-dragon{background:#000;z-index:11;padding:0;overflow:hidden}
+#dragonCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;filter:contrast(1.15) saturate(1.2)}
+.dragon-vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 30%,rgba(0,0,0,.85) 100%)}
+.dragon-scan{position:absolute;inset:0;pointer-events:none;opacity:.35;background:repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0px,rgba(0,0,0,0) 2px,rgba(0,0,0,.4) 3px,rgba(0,0,0,.4) 4px);mix-blend-mode:multiply}
+.dragon-flash{position:absolute;inset:0;pointer-events:none;background:#ff2b3d;opacity:0}
+.dragon-flash.go{animation:df .55s ease}
+@keyframes df{0%{opacity:.35}100%{opacity:0}}
+#dragonStage.shake{animation:dragonShake .32s infinite}
+@keyframes dragonShake{0%{transform:translate(0,0)}25%{transform:translate(-3px,2px)}50%{transform:translate(2px,-3px)}75%{transform:translate(-2px,-1px)}100%{transform:translate(0,0)}}
+.skip-btn{position:absolute;bottom:20px;right:20px;z-index:15;padding:9px 16px;border:1px solid rgba(255,43,61,.4);background:rgba(20,0,4,.7);color:#ffb9c1;font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;border-radius:9px;backdrop-filter:blur(6px);transition:all .2s}
+.skip-btn:hover{border-color:var(--red);color:#fff;box-shadow:0 0 20px rgba(255,43,61,.5)}
+
+#harshWrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:14;pointer-events:none;opacity:0;visibility:hidden}
+#harshWrap.show{opacity:1;visibility:visible}
+.harsh{margin:0;font-size:clamp(46px,13vw,150px);font-weight:900;letter-spacing:.06em;line-height:1;text-align:center;background:linear-gradient(180deg,#fff 0%,#ff2b3d 45%,#ff9a2e 80%,#5c0710 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 34px rgba(255,43,61,.85)) drop-shadow(0 0 80px rgba(255,43,61,.5));opacity:0;transform:scale(2.8);animation:harshSlam .9s cubic-bezier(.19,1,.22,1) forwards}
+@keyframes harshSlam{0%{opacity:0;transform:scale(2.8)}55%{opacity:1;transform:scale(1.04)}70%{transform:scale(.99)}100%{opacity:1;transform:scale(1)}}
+.harsh::after{content:"XYVEN HARSH";position:absolute;left:0;top:0;color:#00ff9c;mix-blend-mode:screen;animation:harshGlitch 2.4s infinite linear alternate-reverse;opacity:.5}
+@keyframes harshGlitch{0%{transform:translate(0,0);clip-path:inset(0 0 60% 0)}20%{transform:translate(-5px,-2px);clip-path:inset(20% 0 40% 0)}40%{transform:translate(4px,1px);clip-path:inset(60% 0 0 0)}60%{transform:translate(-3px,3px);clip-path:inset(10% 0 70% 0)}80%{transform:translate(3px,-1px);clip-path:inset(50% 0 20% 0)}100%{transform:translate(0,0);clip-path:inset(0 0 60% 0)}}
+.harsh-sub{margin-top:20px;font-size:clamp(11px,1.6vw,14px);letter-spacing:.6em;color:#ff9a2e;text-transform:uppercase;text-shadow:0 0 22px rgba(255,154,46,.85);opacity:0;animation:harshSub 1.2s ease .5s forwards}
+@keyframes harshSub{0%{opacity:0;transform:translateY(14px)}100%{opacity:1;transform:translateY(0)}}
+.shockwave{position:absolute;top:50%;left:50%;width:80px;height:80px;margin:-40px 0 0 -40px;border-radius:50%;border:3px solid rgba(255,43,61,.85);pointer-events:none;opacity:0}
+.shockwave.go{animation:shockwaveOut 1s cubic-bezier(.19,1,.22,1) forwards}
+@keyframes shockwaveOut{0%{opacity:1;transform:scale(.4)}100%{opacity:0;transform:scale(24)}}
+
+/* ===== BOOT ===== */
+.boot-shell{width:100%;max-width:860px;margin:auto}
+.term-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--edge);border-bottom:0;border-radius:14px 14px 0 0;background:linear-gradient(180deg,rgba(0,255,156,.07),rgba(0,0,0,.35))}
+.term-dots{display:flex;gap:6px}
+.term-dots i{width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);display:block}
+.term-dots i:nth-child(2){background:var(--orange);box-shadow:0 0 8px var(--orange)}
+.term-dots i:nth-child(3){background:var(--neon);box-shadow:0 0 8px var(--neon)}
+.term-title{font-size:11px;letter-spacing:.24em;color:var(--muted);text-transform:uppercase}
+.term-body{border:1px solid var(--edge);border-radius:0 0 14px 14px;background:linear-gradient(180deg,rgba(2,6,9,.92),rgba(2,8,10,.96));padding:clamp(16px,3vw,28px);min-height:min(58vh,460px);display:flex;flex-direction:column;gap:8px;box-shadow:0 0 60px rgba(0,255,156,.06),inset 0 0 80px rgba(0,0,0,.6)}
+.line{white-space:pre-wrap;word-break:break-word;font-size:clamp(12px,1.7vw,14px);color:#bfe9d8}
+.line .tag{margin-left:10px;font-size:11px;letter-spacing:.16em}
+.tag.ok{color:var(--neon);text-shadow:0 0 10px rgba(0,255,156,.6)}
+.prompt{color:var(--neon)}
+.prompt::before{content:"> "}
+#bootHead{margin-top:6px;font-size:clamp(16px,3.6vw,30px);font-weight:700;letter-spacing:.03em;color:#eafff6}
+#headText{color:#eafff6;text-shadow:0 0 18px rgba(0,255,156,.35)}
+.cursor{display:inline-block;width:10px;height:1.05em;vertical-align:-3px;margin-left:4px;background:var(--neon);box-shadow:0 0 12px var(--neon);animation:blink 1s steps(1) infinite}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+.access-tag{margin-top:16px;font-size:clamp(18px,4.4vw,38px);font-weight:800;letter-spacing:.12em;color:var(--red);text-shadow:0 0 22px rgba(255,43,61,.75);animation:glitchSkew 2.6s infinite}
+@keyframes glitchSkew{0%,92%,100%{transform:none}93%{transform:translateX(-2px) skewX(-1.4deg)}95%{transform:translateX(2px) skewX(1.2deg)}97%{transform:none}}
+
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 26px;border-radius:12px;border:1px solid var(--neon);background:linear-gradient(180deg,rgba(0,255,156,.10),rgba(0,255,156,.02));color:var(--neon);font-weight:700;letter-spacing:.16em;font-size:12px;text-transform:uppercase;transition:transform .18s ease,box-shadow .25s ease,background .25s ease,color .2s ease;box-shadow:0 0 0 1px rgba(0,0,0,.4) inset,0 0 24px rgba(0,255,156,.14);overflow:hidden}
+.btn:hover{background:linear-gradient(180deg,rgba(0,255,156,.22),rgba(0,255,156,.06));box-shadow:0 0 34px rgba(0,255,156,.35);transform:translateY(-2px)}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.btn.red{border-color:var(--red);color:#ffe3e6;background:linear-gradient(180deg,rgba(255,43,61,.20),rgba(255,43,61,.04));box-shadow:0 0 26px rgba(255,43,61,.22)}
+.btn.red:hover{box-shadow:0 0 38px rgba(255,43,61,.45);background:linear-gradient(180deg,rgba(255,43,61,.34),rgba(255,43,61,.08))}
+.btn.ghost{border-color:rgba(255,255,255,.18);color:#b9d6cb;background:rgba(255,255,255,.03);box-shadow:none}
+.btn.ghost:hover{border-color:var(--neon);color:var(--neon);box-shadow:0 0 24px rgba(0,255,156,.18)}
+.btn.block{width:100%}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+.btn-row .btn{flex:1 1 240px}
+
+.steps{display:flex;flex-direction:column;gap:10px;margin:22px 0 8px}
+.step{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);transition:all .4s}
+.step .idx{font-size:11px;letter-spacing:.14em;color:var(--muted);min-width:34px}
+.step .lbl{flex:1;font-size:13px;color:#9dbdb2}
+.step .st{font-size:11px;letter-spacing:.16em;color:var(--muted)}
+.step.active{border-color:var(--orange);box-shadow:0 0 26px rgba(255,154,46,.14);background:rgba(255,154,46,.05)}
+.step.active .lbl{color:#ffe6c9}
+.step.done{border-color:var(--neon-dim);background:rgba(0,255,156,.05);box-shadow:0 0 24px rgba(0,255,156,.1)}
+.step.done .lbl{color:#d6fff0}
+.step.done .st{color:var(--neon)}
+.check{width:20px;height:20px;border-radius:50%;border:1px solid var(--muted);flex:0 0 auto;display:grid;place-items:center;font-size:11px;color:transparent;transition:all .35s}
+.step.done .check{border-color:var(--neon);color:#02110b;background:var(--neon);box-shadow:0 0 18px rgba(0,255,156,.6)}
+.step.active .check{border-color:var(--orange);animation:pulseRing 1.3s infinite}
+@keyframes pulseRing{0%{box-shadow:0 0 0 0 rgba(255,154,46,.45)}70%{box-shadow:0 0 0 12px rgba(255,154,46,0)}100%{box-shadow:0 0 0 0 rgba(255,154,46,0)}}
+
+.progress{margin-top:20px;height:14px;border-radius:9px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.55);overflow:hidden;position:relative}
+.progress-fill{height:100%;width:0%;border-radius:8px;transition:background .45s,box-shadow .45s;background:linear-gradient(90deg,#7a0b12,var(--red));box-shadow:0 0 22px rgba(255,43,61,.6)}
+.progress-fill.orange{background:linear-gradient(90deg,#7a3b06,var(--orange));box-shadow:0 0 22px rgba(255,154,46,.6)}
+.progress-fill.green{background:linear-gradient(90deg,#046b45,var(--neon));box-shadow:0 0 24px rgba(0,255,156,.65)}
+.progress::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,255,255,.07) 0 2px,transparent 2px 8px);pointer-events:none}
+.progress-meta{display:flex;justify-content:space-between;margin-top:8px;font-size:11px;letter-spacing:.16em;color:var(--muted)}
+
+.verified-list{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.verified-item{display:flex;align-items:center;gap:12px;font-size:clamp(13px,2vw,17px);font-weight:700;letter-spacing:.06em;opacity:0;transform:translateY(8px);animation:riseIn .5s forwards}
+@keyframes riseIn{to{opacity:1;transform:none}}
+.verified-item .mark{color:var(--neon);text-shadow:0 0 14px rgba(0,255,156,.7)}
+
+.glass-list{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:10px}
+.glass-list li{display:flex;gap:12px;align-items:flex-start;padding:13px 15px;border-radius:12px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.025);font-size:13px;color:#b6d5c9}
+.glass-list li b{color:var(--neon);font-weight:700}
+.bullet{color:var(--neon);flex:0 0 auto;text-shadow:0 0 10px rgba(0,255,156,.6)}
+
+.field{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.field label{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.input,select.input{width:100%;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.45);color:#e6fff5;outline:none;transition:border-color .2s,box-shadow .2s}
+.input:focus{border-color:var(--neon);box-shadow:0 0 0 3px rgba(0,255,156,.12),0 0 24px rgba(0,255,156,.18)}
+select.input{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--neon) 50%),linear-gradient(135deg,var(--neon) 50%,transparent 50%);background-position:calc(100% - 20px) 50%,calc(100% - 14px) 50%;background-size:6px 6px,6px 6px;background-repeat:no-repeat}
+.phone-row{display:grid;grid-template-columns:minmax(120px,150px) 1fr;gap:12px}
+.check-row{display:flex;gap:12px;align-items:flex-start;margin-top:18px;font-size:12.5px;color:#a9c9bd;cursor:pointer}
+.check-row input{appearance:none;width:20px;height:20px;flex:0 0 auto;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);position:relative;cursor:pointer;transition:all .2s}
+.check-row input:checked{border-color:var(--neon);background:rgba(0,255,156,.18);box-shadow:0 0 16px rgba(0,255,156,.4)}
+.check-row input:checked::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:var(--neon);font-size:13px;font-weight:700}
+
+.otp-row{display:flex;gap:10px;justify-content:center;margin:22px 0 6px;flex-wrap:wrap}
+.otp-box{width:clamp(42px,10vw,58px);height:clamp(52px,12vw,64px);text-align:center;font-size:clamp(18px,4vw,24px);font-weight:700;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.5);color:var(--neon);outline:none;transition:all .2s;text-shadow:0 0 14px rgba(0,255,156,.6)}
+.otp-box:focus{border-color:var(--neon);box-shadow:0 0 0 3px rgba(0,255,156,.12),0 0 26px rgba(0,255,156,.28);transform:translateY(-2px)}
+.note{margin-top:16px;padding:12px 14px;border-radius:10px;font-size:11.5px;line-height:1.6;border:1px dashed rgba(255,154,46,.45);background:rgba(255,154,46,.07);color:#ffd9a8}
+.note b{color:var(--orange)}
+
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:20px}
+.data-card{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 15px;border-radius:12px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.022);transition:border-color .3s,box-shadow .3s}
+.data-card:hover{border-color:var(--neon-dim);box-shadow:0 0 22px rgba(0,255,156,.08)}
+.data-card .k{font-size:10.5px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase}
+.data-card .v{font-size:13px;color:#dff8ee;margin-top:4px;word-break:break-word}
+.chip{font-size:10px;letter-spacing:.14em;padding:4px 9px;border-radius:999px;white-space:nowrap;border:1px solid}
+.chip.ok{color:var(--neon);border-color:var(--neon-dim);background:rgba(0,255,156,.08)}
+.chip.na{color:var(--muted);border-color:rgba(255,255,255,.12);background:rgba(255,255,255,.03)}
+.chip.warn{color:var(--orange);border-color:rgba(255,154,46,.4);background:rgba(255,154,46,.08)}
+
+.hud{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.hud-card{position:relative;padding:18px;border-radius:14px;border:1px solid var(--edge);background:linear-gradient(160deg,rgba(0,255,156,.06),rgba(0,0,0,.35));box-shadow:0 0 30px rgba(0,255,156,.06),inset 0 0 40px rgba(0,0,0,.5);overflow:hidden}
+.hud-card::after{content:"";position:absolute;top:0;left:-60%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(0,255,156,.09),transparent);animation:shine 5.5s ease-in-out infinite}
+@keyframes shine{0%{left:-70%}55%{left:130%}100%{left:130%}}
+.hud-card .k{font-size:10.5px;letter-spacing:.24em;color:var(--muted);text-transform:uppercase}
+.hud-card .v{margin-top:10px;font-size:clamp(15px,2.4vw,19px);font-weight:700;color:var(--neon);text-shadow:0 0 16px rgba(0,255,156,.45)}
+.hud-card.red{border-color:var(--edge-red);background:linear-gradient(160deg,rgba(255,43,61,.08),rgba(0,0,0,.35))}
+.hud-card.red .v{color:var(--red);text-shadow:0 0 16px rgba(255,43,61,.45)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--neon);box-shadow:0 0 10px var(--neon);margin-right:8px;animation:pulseDot 1.6s infinite}
+@keyframes pulseDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.78)}}
+
+.score-block{display:flex;flex-wrap:wrap;gap:28px;align-items:center;justify-content:center;margin-top:22px}
+.ring-wrap{position:relative;width:min(58vw,230px);height:min(58vw,230px);flex:0 0 auto}
+.ring{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:10;stroke-linecap:round}
+.ring .bgc{stroke:rgba(255,255,255,.07)}
+.ring .fgc{stroke:url(#scoreGrad);stroke-dasharray:540.35;stroke-dashoffset:540.35;filter:drop-shadow(0 0 8px rgba(0,255,156,.55));transition:stroke-dashoffset 1.6s cubic-bezier(.22,1,.36,1)}
+.score-center{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.score-center .num{font-size:clamp(30px,7vw,44px);font-weight:800;color:var(--neon);text-shadow:0 0 26px rgba(0,255,156,.55);line-height:1}
+.score-center .cap{font-size:10px;letter-spacing:.26em;color:var(--muted);margin-top:6px}
+.checklist{display:flex;flex-direction:column;gap:11px;min-width:230px}
+.checklist div{display:flex;gap:10px;align-items:center;font-size:13px;color:#c8e8dc}
+.checklist .ok{color:var(--neon);text-shadow:0 0 10px rgba(0,255,156,.55)}
+
+.section{margin-top:26px}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+
+.console{border:1px solid var(--edge);border-radius:14px;background:rgba(1,5,7,.85);box-shadow:inset 0 0 60px rgba(0,0,0,.7),0 0 34px rgba(0,255,156,.05);overflow:hidden}
+.console-out{padding:16px;max-height:290px;overflow-y:auto;font-size:12.5px;display:flex;flex-direction:column;gap:6px}
+.console-out .l{white-space:pre-wrap;word-break:break-word;color:#b9dccf}
+.console-out .l.sys{color:var(--neon)}
+.console-out .l.err{color:var(--red)}
+.console-out .l.dim{color:var(--muted)}
+.console-in{display:flex;align-items:center;gap:10px;border-top:1px solid rgba(255,255,255,.07);padding:12px 16px;background:rgba(0,255,156,.03)}
+.console-in .p{color:var(--neon);font-size:12.5px;white-space:nowrap}
+.console-in input{flex:1;background:transparent;border:0;outline:none;color:#e6fff5;font-size:12.5px}
+
+.timeline{position:relative;padding-left:26px;margin-top:8px}
+.timeline::before{content:"";position:absolute;left:7px;top:6px;bottom:6px;width:1px;background:linear-gradient(180deg,var(--neon),rgba(255,43,61,.5))}
+.tl-item{position:relative;padding:9px 0;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.tl-item::before{content:"";position:absolute;left:-24px;top:15px;width:9px;height:9px;border-radius:50%;background:var(--neon);box-shadow:0 0 12px var(--neon)}
+.tl-item.warn::before{background:var(--orange);box-shadow:0 0 12px var(--orange)}
+.tl-item.bad::before{background:var(--red);box-shadow:0 0 12px var(--red)}
+.tl-time{font-size:10.5px;letter-spacing:.14em;color:var(--muted);min-width:78px}
+.tl-label{font-size:12.5px;color:#c8e8dc;letter-spacing:.05em}
+
+.badge-card{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.badge{position:relative;width:112px;height:112px;flex:0 0 auto;display:grid;place-items:center;border-radius:50%;background:radial-gradient(circle at 50% 40%,rgba(0,255,156,.22),rgba(0,0,0,.6) 70%);border:2px solid var(--neon);box-shadow:0 0 34px rgba(0,255,156,.4),inset 0 0 30px rgba(0,255,156,.18);animation:badgePulse 3.2s ease-in-out infinite}
+@keyframes badgePulse{0%,100%{box-shadow:0 0 30px rgba(0,255,156,.35),inset 0 0 26px rgba(0,255,156,.15)}50%{box-shadow:0 0 54px rgba(0,255,156,.6),inset 0 0 40px rgba(0,255,156,.28)}}
+.badge .tick{font-size:44px;color:var(--neon);text-shadow:0 0 22px rgba(0,255,156,.8);line-height:1}
+.badge .ring2{position:absolute;inset:-12px;border-radius:50%;border:1px dashed rgba(0,255,156,.35);animation:spin 18s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 18px;font-size:12.5px;margin-top:12px}
+.kv dt{color:var(--muted);letter-spacing:.12em;font-size:10.5px;text-transform:uppercase}
+.kv dd{margin:0;color:#dcf6ea;word-break:break-all}
+.footer-note{margin-top:26px;font-size:10.5px;letter-spacing:.1em;color:#3f5b52;text-align:center;line-height:1.9}
+.toast-wrap{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:none;width:min(92vw,520px)}
+.toast{padding:12px 18px;border-radius:12px;border:1px solid var(--edge);background:rgba(4,10,12,.94);color:#d6fff0;font-size:12px;letter-spacing:.06em;box-shadow:0 0 30px rgba(0,0,0,.6);animation:toastIn .3s ease;backdrop-filter:blur(10px);width:100%;text-align:center}
+.toast.err{border-color:var(--edge-red);color:#ffd6da;box-shadow:0 0 30px rgba(255,43,61,.25)}
+@keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.flash{position:fixed;inset:0;z-index:55;background:#00ff9c;opacity:0;pointer-events:none}
+.flash.go{animation:flashOut .42s ease}
+@keyframes flashOut{0%{opacity:.16}100%{opacity:0}}
+.shake{animation:shakeIt .42s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shakeIt{10%,90%{transform:translateX(-1.5px)}20%,80%{transform:translateX(2.5px)}30%,50%,70%{transform:translateX(-3.5px)}40%,60%{transform:translateX(3.5px)}}
+
+.alarm-overlay{position:fixed;inset:0;z-index:58;pointer-events:none;background:radial-gradient(circle at center,rgba(255,0,20,.15) 0%,rgba(255,0,20,.60) 100%);opacity:0;transition:opacity .15s}
+.alarm-overlay.on{animation:alarmFlash .28s steps(2) 5}
+@keyframes alarmFlash{0%,100%{opacity:.80}50%{opacity:.15}}
+.alarm-badge{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:59;padding:14px 30px;border:2px solid #ff2b3d;background:rgba(20,0,4,.94);color:#fff;font-size:clamp(12px,2vw,15px);letter-spacing:.30em;font-weight:800;box-shadow:0 0 50px rgba(255,43,61,.85),0 0 100px rgba(255,43,61,.5);text-shadow:0 0 14px #ff2b3d;pointer-events:none;display:none;white-space:nowrap}
+.alarm-badge.on{display:block;animation:alarmBadgeIn .25s ease}
+@keyframes alarmBadgeIn{from{opacity:0;transform:translateX(-50%) scale(.9)}to{opacity:1;transform:translateX(-50%) scale(1)}}
+
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important}#matrix{opacity:.06}}
+@media (max-width:620px){
+  .term-body{min-height:52vh}
+  .btn{padding:13px 18px;font-size:11px;letter-spacing:.12em}
+  .btn-row .btn{flex:1 1 100%}
+  .kv{grid-template-columns:1fr;gap:2px 0}
+  .kv dd{margin-bottom:10px}
+  .alarm-badge{font-size:11px;padding:11px 18px;letter-spacing:.22em}
+  .harsh-sub{letter-spacing:.32em}
+}
+</style>
+</head>
+<body>
+
+<canvas id="matrix" aria-hidden="true"></canvas>
+<div class="fx fx-grid" aria-hidden="true"></div>
+<div class="fx fx-vig" aria-hidden="true"></div>
+<div class="fx fx-noise" aria-hidden="true"></div>
+<div class="fx fx-scan" aria-hidden="true"></div>
+<div class="flash" id="flash" aria-hidden="true"></div>
+<div class="alarm-overlay" id="alarmOverlay" aria-hidden="true"></div>
+<div class="alarm-badge" id="alarmBadge">⚠ SECURITY ALERT ⚠</div>
+
+<!-- ===================== TAP TO START ===================== -->
+<section class="stage active" id="stage-tap">
+  <div class="tap-frame"></div>
+  <span class="tap-corner tl"></span><span class="tap-corner tr"></span>
+  <span class="tap-corner bl"></span><span class="tap-corner br"></span>
+  <button class="tap-btn" id="tapStart">⚡ TAP TO AWAKEN XYVEN</button>
+  <div class="tap-tag">SOUND · VISUALS · DRAGON PROTOCOL</div>
+</section>
+
+<!-- ===================== DRAGON INTRO ===================== -->
+<section class="stage" id="stage-dragon">
+  <div id="dragonStage" style="position:absolute;inset:0;overflow:hidden">
+    <canvas id="dragonCanvas" aria-hidden="true"></canvas>
+    <div class="dragon-vig"></div>
+    <div class="dragon-scan"></div>
+    <div class="dragon-flash" id="dragonFlash"></div>
+  </div>
+  <div id="harshWrap">
+    <div class="shockwave" id="shockwave"></div>
+    <h1 class="harsh" id="harshText">XYVEN HARSH</h1>
+    <div class="harsh-sub">ENTERING THE REALM</div>
+  </div>
+  <button class="skip-btn" id="skipDragon">SKIP →</button>
+</section>
+
+<!-- ===================== BOOT ===================== -->
+<section class="stage" id="stage-boot">
+  <div class="boot-shell">
+    <div class="term-head">
+      <div class="term-dots"><i></i><i></i><i></i></div>
+      <div class="term-title">xyven@world — secure shell</div>
+    </div>
+    <div class="term-body">
+      <div id="bootTerm" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div id="bootHead" class="hidden">
+        <span id="headText"></span><span class="cursor"></span>
+      </div>
+      <div id="accessTag" class="access-tag hidden">ACCESS REQUESTED</div>
+      <div id="enterWrap" class="hidden" style="margin-top:26px">
+        <button class="btn" id="enterBtn">ENTER XYVEN WORLD →</button>
+      </div>
+    </div>
+  </div>
+  <p class="footer-note">
+    XYVEN WORLD // visual security experience — no device scanning, no hidden collection.<br />
+    All optional data is requested transparently and only with your consent.
+  </p>
+</section>
+
+<!-- ===================== SECURITY ===================== -->
+<section class="stage" id="stage-security">
+  <div class="wrap wrap-narrow">
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <div class="eyebrow">xyven security protocol</div>
+      <h1>SECURITY <span class="neon">PROTOCOL</span></h1>
+      <p class="lead" style="margin-top:10px">Establishing a protected visual session. This sequence is an interface animation only — nothing on your device is scanned, accessed or modified.</p>
+      <div class="steps" id="stepList"></div>
+      <div class="progress"><div class="progress-fill" id="progFill"></div></div>
+      <div class="progress-meta"><span id="progLabel">INITIALIZING…</span><span id="progPct">0%</span></div>
+      <div class="verified-list hidden" id="verifiedList">
+        <div class="verified-item" style="animation-delay:.05s"><span class="mark">✓</span> ACCESS VERIFIED</div>
+        <div class="verified-item" style="animation-delay:.35s"><span class="mark">✓</span> SESSION SECURE</div>
+        <div class="verified-item" style="animation-delay:.65s"><span class="mark">✓</span> XYVEN CORE ONLINE</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CONSENT ===================== -->
+<section class="stage" id="stage-consent">
+  <div class="wrap wrap-narrow">
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <div class="eyebrow">customer security consent</div>
+      <h1>PROTECTING <span class="red">XYVEN CUSTOMERS</span></h1>
+      <p class="lead" style="margin-top:12px">“XYVEN may request limited information with your permission to help protect customers and investigate unauthorized or scam-related activity.”</p>
+      <ul class="glass-list">
+        <li><span class="bullet">▸</span><span><b>Phone number</b> is requested only with your explicit consent, and only for security &amp; support contact.</span></li>
+        <li><span class="bullet">▸</span><span><b>Basic browser / device information</b> may be collected only when it is available and permitted by your browser.</span></li>
+        <li><span class="bullet">▸</span><span>Information is used strictly for <b>security and customer-support purposes</b>.</span></li>
+        <li><span class="bullet">▸</span><span>You may <b>continue without optional information</b> — the experience still works.</span></li>
+        <li><span class="bullet">▸</span><span>Permissions can be <b>denied at any time</b>, and you can delete your data from the Privacy Center.</span></li>
+      </ul>
+      <div class="btn-row">
+        <button class="btn" id="consentAllow">ALLOW &amp; CONTINUE</button>
+        <button class="btn ghost" id="consentDeny">CONTINUE WITHOUT OPTIONAL DATA</button>
+      </div>
+      <p class="footer-note" style="text-align:left;margin-top:18px">XYVEN never secretly accesses contacts, files, cameras, microphones or credentials.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PHONE ===================== -->
+<section class="stage" id="stage-phone">
+  <div class="wrap wrap-narrow">
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <div class="eyebrow">optional — consent based</div>
+      <h1>SHARE YOUR <span class="neon">CONTACT NUMBER</span></h1>
+      <p class="lead" style="margin-top:12px">Your number is used only to help XYVEN verify your session and reach you regarding security or scam-related activity. It is never sold, never shared with advertisers, and you can remove it at any time.</p>
+      <div class="field">
+        <label for="country">Country</label>
+        <select class="input" id="country">
+          <option value="+91" selected>India (+91)</option>
+          <option value="+1">United States (+1)</option>
+          <option value="+44">United Kingdom (+44)</option>
+          <option value="+61">Australia (+61)</option>
+          <option value="+971">UAE (+971)</option>
+          <option value="+65">Singapore (+65)</option>
+          <option value="+49">Germany (+49)</option>
+          <option value="+81">Japan (+81)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="phone">Phone number</label>
+        <div class="phone-row">
+          <input class="input" id="cc" value="+91" readonly aria-label="Country code" />
+          <input class="input" id="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="98765 43210" maxlength="15" />
+        </div>
+      </div>
+      <label class="check-row" for="phoneConsent">
+        <input type="checkbox" id="phoneConsent" />
+        <span>I understand and consent to XYVEN storing my phone number for security and customer-support purposes.</span>
+      </label>
+      <div class="btn-row">
+        <button class="btn" id="phoneContinue" disabled>SEND VERIFICATION CODE →</button>
+        <button class="btn ghost" id="phoneSkip">SKIP — LIMITED MODE</button>
+      </div>
+      <p class="footer-note" style="text-align:left;margin-top:16px">This is a consent-based request. Nothing is transmitted until you press the button.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== OTP ===================== -->
+<section class="stage" id="stage-otp">
+  <div class="wrap wrap-narrow">
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <div class="eyebrow">two-step verification</div>
+      <h1>ENTER <span class="neon">VERIFICATION CODE</span></h1>
+      <p class="lead" style="margin-top:12px">A 6-digit code was generated for <span class="neon" id="otpTarget">—</span>. Codes expire after 5 minutes.</p>
+      <div class="otp-row" id="otpRow">
+        <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="digit 1" />
+        <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="digit 2" />
+        <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="digit 3" />
+        <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="digit 4" />
+        <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="digit 5" />
+        <input class="otp-box" inputmode="numeric" maxlength="1" aria-label="digit 6" />
+      </div>
+      <div class="note" id="otpDemoNote">
+        <b>DEMO / DEVELOPMENT MODE</b> — no SMS provider is configured on this server, so the verification code is displayed here for testing. In production, codes are hashed (never stored in plaintext) and delivered by your SMS provider.
+      </div>
+      <div class="btn-row">
+        <button class="btn" id="otpVerify">VERIFY</button>
+        <button class="btn ghost" id="otpResend">RESEND CODE</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== DEVICE ===================== -->
+<section class="stage" id="stage-device">
+  <div class="wrap">
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <div class="eyebrow">transparent collection</div>
+      <h1>DEVICE <span class="neon">SECURITY PROFILE</span></h1>
+      <p class="lead" style="margin-top:12px">Below is only the information your browser openly exposes to every website. Nothing here is read from your files, clipboard, contacts, camera or microphone.</p>
+      <div class="grid-2" id="deviceGrid"></div>
+      <div class="btn-row">
+        <button class="btn ghost" id="permCheck">CHECK BROWSER PERMISSION STATES</button>
+        <button class="btn" id="deviceContinue">CONTINUE TO DASHBOARD →</button>
+      </div>
+      <p class="footer-note" style="text-align:left;margin-top:16px">Permission states are read-only queries. XYVEN never triggers a permission prompt on its own and never bypasses a denial. If a permission is declined, limited access mode continues normally.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== DASHBOARD ===================== -->
+<section class="stage" id="stage-dash">
+  <div class="wrap">
+    <div class="panel">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">xyven core // live</div>
+          <h1>SECURITY <span class="neon">DASHBOARD</span></h1>
+        </div>
+        <div class="chip ok"><span class="dot"></span>SESSION <span id="dashSessionShort">—</span></div>
+      </div>
+      <div class="hud" style="margin-top:20px">
+        <div class="hud-card"><div class="k">Security Status</div><div class="v">PROTECTED ✓</div></div>
+        <div class="hud-card"><div class="k">Session</div><div class="v">SECURE ✓</div></div>
+        <div class="hud-card"><div class="k">XYVEN Core</div><div class="v">ONLINE ✓</div></div>
+      </div>
+      <div class="score-block">
+        <div class="ring-wrap">
+          <svg class="ring" viewBox="0 0 200 200" aria-hidden="true">
+            <defs>
+              <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#00ff9c" />
+                <stop offset="55%" stop-color="#ff9a2e" />
+                <stop offset="100%" stop-color="#00ff9c" />
+              </linearGradient>
+            </defs>
+            <circle class="bgc" cx="100" cy="100" r="86"></circle>
+            <circle class="fgc" id="scoreRing" cx="100" cy="100" r="86"></circle>
+          </svg>
+          <div class="score-center">
+            <div>
+              <div class="num"><span id="scoreVal">0</span>%</div>
+              <div class="cap">SECURITY SCORE</div>
+            </div>
+          </div>
+        </div>
+        <div class="checklist">
+          <div><span class="ok">✓</span> Secure Session</div>
+          <div><span class="ok">✓</span> Consent Recorded</div>
+          <div><span class="ok">✓</span> Browser Verified</div>
+          <div><span class="ok">✓</span> XYVEN Protection Active</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-head"><h3>Live System Status</h3><span class="chip ok"><span class="dot"></span>ALL SYSTEMS NOMINAL</span></div>
+        <div class="hud">
+          <div class="hud-card"><div class="k">XYVEN CORE</div><div class="v">ONLINE</div></div>
+          <div class="hud-card"><div class="k">API</div><div class="v">ONLINE</div></div>
+          <div class="hud-card"><div class="k">AUTH</div><div class="v">ONLINE</div></div>
+          <div class="hud-card red"><div class="k">SECURITY</div><div class="v">ACTIVE</div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-head"><h3>Cyber Terminal</h3><span class="chip na">TYPE “help”</span></div>
+        <div class="console">
+          <div class="console-out" id="consoleOut"></div>
+          <div class="console-in">
+            <span class="p">xyven@world:~$</span>
+            <input id="consoleInput" autocomplete="off" spellcheck="false" placeholder="status" aria-label="terminal input" />
+          </div>
+        </div>
+      </div>
+      <div class="section" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:22px">
+        <div>
+          <div class="section-head"><h3>Security Event Timeline</h3></div>
+          <div class="timeline" id="timeline"></div>
+        </div>
+        <div>
+          <div class="section-head"><h3>Session</h3></div>
+          <div class="panel" style="padding:18px">
+            <dl class="kv">
+              <dt>Session ID</dt><dd id="sessionId">—</dd>
+              <dt>Consent</dt><dd id="sessionConsent">—</dd>
+              <dt>Phone</dt><dd id="sessionPhone">—</dd>
+              <dt>OTP Status</dt><dd id="sessionOtp">—</dd>
+              <dt>Created</dt><dd id="sessionCreated">—</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="panel badge-card">
+          <div class="badge"><div class="ring2"></div><div class="tick">✓</div></div>
+          <div style="flex:1;min-width:220px">
+            <h3>XYVEN VERIFIED</h3>
+            <p class="lead" style="margin-top:8px">This badge confirms that a consent-based security session was created in this browser. It is an interface indicator, not a claim of device scanning or identity verification.</p>
+            <div class="chip ok" style="margin-top:12px;display:inline-block">BADGE ID <span id="badgeId">—</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-head"><h3>Privacy Center</h3><span class="chip warn">YOUR CONTROL</span></div>
+        <div class="panel" style="padding:20px">
+          <dl class="kv">
+            <dt>Information collected</dt><dd id="pvCollected">—</dd>
+            <dt>Purpose</dt><dd>Security, session integrity and customer support only.</dd>
+            <dt>Consent status</dt><dd id="pvConsent">—</dd>
+            <dt>Retention</dt><dd>Kept only while needed; deletable at any time below.</dd>
+          </dl>
+          <div class="btn-row">
+            <button class="btn ghost" id="downloadData">DOWNLOAD MY DATA (JSON)</button>
+            <button class="btn red" id="deleteData">DELETE / ANONYMIZE MY DATA</button>
+          </div>
+        </div>
+      </div>
+      <p class="footer-note">XYVEN WORLD is a visual security interface. No hacking, scanning, exploitation or covert collection occurs.<br />Optional information is stored only after explicit consent and can be removed instantly.</p>
+    </div>
+  </div>
+</section>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var $ = function (s) { return document.querySelector(s); };
+  var RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ============ SOUND ENGINE ============ */
+  var Sound = {
+    ctx: null,
+    ready: false,
+    init: function () {
+      if (this.ctx) return;
+      try {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return;
+        this.ctx = new AC();
+        this.ready = true;
+      } catch (e) { this.ready = false; }
+    },
+    resume: function () {
+      if (this.ctx && this.ctx.state === 'suspended') {
+        try { this.ctx.resume(); } catch (e) {}
+      }
+    },
+    tone: function (freq, dur, type, vol, detune) {
+      if (!this.ready) return;
+      var ctx = this.ctx, now = ctx.currentTime;
+      var osc = ctx.createOscillator();
+      var g = ctx.createGain();
+      osc.type = type || 'square';
+      osc.frequency.setValueAtTime(freq, now);
+      if (detune) osc.detune.setValueAtTime(detune, now);
+      g.gain.setValueAtTime(0.001, now);
+      g.gain.exponentialRampToValueAtTime(vol || 0.05, now + 0.006);
+      g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      osc.connect(g); g.connect(ctx.destination);
+      osc.start(now); osc.stop(now + dur + 0.03);
+    },
+    click: function () {
+      this.init(); this.resume();
+      this.tone(1500, 0.05, 'square', 0.05);
+      var self = this;
+      setTimeout(function () { self.tone(2100, 0.03, 'square', 0.035); }, 22);
+    },
+    hover: function () {
+      this.init();
+      if (!this.ready) return;
+      this.tone(2600, 0.02, 'sine', 0.02);
+    },
+    noiseBurst: function (dur, filterFreq, vol) {
+      if (!this.ready) return;
+      var ctx = this.ctx, now = ctx.currentTime;
+      var len = Math.floor(ctx.sampleRate * dur);
+      var buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      var src = ctx.createBufferSource(); src.buffer = buf;
+      var filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass'; filter.frequency.value = filterFreq;
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(vol || 0.15, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      src.connect(filter); filter.connect(g); g.connect(ctx.destination);
+      src.start(now);
+    },
+    roar: function () {
+      this.init(); this.resume();
+      if (!this.ready) return;
+      var ctx = this.ctx, now = ctx.currentTime;
+      var osc = ctx.createOscillator();
+      var osc2 = ctx.createOscillator();
+      var g = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(95, now);
+      osc.frequency.exponentialRampToValueAtTime(38, now + 1.3);
+      osc2.type = 'square';
+      osc2.frequency.setValueAtTime(60, now);
+      osc2.frequency.exponentialRampToValueAtTime(25, now + 1.3);
+      g.gain.setValueAtTime(0.001, now);
+      g.gain.exponentialRampToValueAtTime(0.32, now + 0.12);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 1.5);
+      osc.connect(g); osc2.connect(g); g.connect(ctx.destination);
+      osc.start(now); osc2.start(now);
+      osc.stop(now + 1.55); osc2.stop(now + 1.55);
+      this.noiseBurst(1.5, 420, 0.18);
+    },
+    fire: function (dur) {
+      this.init(); this.resume();
+      if (!this.ready) return;
+      dur = dur || 2;
+      var ctx = this.ctx, now = ctx.currentTime;
+      var len = Math.floor(ctx.sampleRate * dur);
+      var buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      var src = ctx.createBufferSource(); src.buffer = buf;
+      var filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(2200, now);
+      filter.frequency.exponentialRampToValueAtTime(400, now + dur);
+      filter.Q.value = 1.5;
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.001, now);
+      g.gain.exponentialRampToValueAtTime(0.20, now + 0.15);
+      g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+      src.connect(filter); filter.connect(g); g.connect(ctx.destination);
+      src.start(now); src.stop(now + dur);
+    },
+    impact: function () {
+      this.init(); this.resume();
+      if (!this.ready) return;
+      var ctx = this.ctx, now = ctx.currentTime;
+      var osc = ctx.createOscillator();
+      var g = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(180, now);
+      osc.frequency.exponentialRampToValueAtTime(28, now + 0.9);
+      g.gain.setValueAtTime(0.001, now);
+      g.gain.exponentialRampToValueAtTime(0.35, now + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 1.0);
+      osc.connect(g); g.connect(ctx.destination);
+      osc.start(now); osc.stop(now + 1.0);
+      this.noiseBurst(0.5, 800, 0.20);
+    },
+    whoosh: function () {
+      this.init(); this.resume();
+      if (!this.ready) return;
+      var ctx = this.ctx, now = ctx.currentTime;
+      var len = Math.floor(ctx.sampleRate * 0.7);
+      var buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      var src = ctx.createBufferSource(); src.buffer = buf;
+      var filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(300, now);
+      filter.frequency.exponentialRampToValueAtTime(2400, now + 0.55);
+      filter.Q.value = 3;
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.001, now);
+      g.gain.exponentialRampToValueAtTime(0.14, now + 0.2);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+      src.connect(filter); filter.connect(g); g.connect(ctx.destination);
+      src.start(now); src.stop(now + 0.75);
+    },
+    glitch: function () {
+      this.init(); this.resume();
+      if (!this.ready) return;
+      var self = this;
+      for (var i = 0; i < 6; i++) {
+        setTimeout(function () {
+          self.tone(1200 + Math.random() * 2200, 0.02, 'square', 0.05);
+        }, i * 40);
+      }
+    },
+    harshSlam: function () {
+      this.init(); this.resume();
+      this.impact();
+      var self = this;
+      setTimeout(function () { self.roar(); }, 60);
+      setTimeout(function () { self.glitch(); }, 220);
+    }
+  };
+
+  /* Global button sound */
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('button, .btn, a, .otp-box, .input');
+    if (b) Sound.click();
+  }, true);
+  document.addEventListener('pointerenter', function (e) {
+    var b = e.target.closest && e.target.closest('button, .btn');
+    if (b && (!b._lastHover || Date.now() - b._lastHover > 220)) {
+      b._lastHover = Date.now();
+      Sound.hover();
+    }
+  }, true);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      Sound.click();
+    } else if (e.key.length === 1) {
+      Sound.hover();
+    }
+  }, true);
+
+  /* ============ UTILS ============ */
+  var API = function (p, o) {
+    return fetch(p, Object.assign({
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' }
+    }, o || {})).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        if (!r.ok) { var e = new Error(j.message || j.error || ('HTTP ' + r.status)); e.code = j.error; throw e; }
+        return j;
+      });
+    });
+  };
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, RM ? Math.min(ms, 60) : ms); }); }
+  function toast(msg, isErr) {
+    var t = document.createElement('div');
+    t.className = 'toast' + (isErr ? ' err' : '');
+    t.textContent = msg;
+    $('#toasts').appendChild(t);
+    setTimeout(function () { t.style.opacity = '0'; t.style.transition = 'opacity .4s'; }, 2800);
+    setTimeout(function () { t.remove(); }, 3300);
+  }
+  function flash() {
+    var f = $('#flash');
+    f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
+  }
+  function shake() {
+    if (RM) return;
+    document.body.classList.remove('shake'); void document.body.offsetWidth;
+    document.body.classList.add('shake');
+    setTimeout(function () { document.body.classList.remove('shake'); }, 460);
+  }
+  function playAlarm() {
+    if (!Sound.ready) return;
+    for (var i = 0; i < 5; i++) {
+      (function (i) {
+        setTimeout(function () {
+          Sound.tone(i % 2 === 0 ? 920 : 640, 0.28, 'square', 0.14);
+        }, i * 320);
+      })(i);
+    }
+  }
+  function triggerAlarm(msg) {
+    playAlarm();
+    if (!RM) {
+      var ov = $('#alarmOverlay'), bd = $('#alarmBadge');
+      if (ov) { ov.classList.remove('on'); void ov.offsetWidth; ov.classList.add('on'); setTimeout(function () { ov.classList.remove('on'); }, 1600); }
+      if (bd) { if (msg) bd.textContent = msg; bd.classList.add('on'); setTimeout(function () { bd.classList.remove('on'); }, 2400); }
+    }
+    shake();
+  }
+  function showScreen(id) {
+    var all = document.querySelectorAll('.stage');
+    for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
+    var el = document.getElementById(id);
+    if (el) { el.classList.add('active'); el.scrollTop = 0; }
+  }
+  function typeText(el, text, speed) {
+    return new Promise(function (resolve) {
+      var i = 0;
+      if (RM) { el.textContent = text; return resolve(); }
+      (function tick() {
+        el.textContent = text.slice(0, ++i);
+        if (i >= text.length) return resolve();
+        setTimeout(tick, speed + Math.random() * speed * 0.7);
+      })();
+    });
+  }
+
+  /* ============ MATRIX BG ============ */
+  (function matrix() {
+    var c = document.getElementById('matrix');
+    if (!c) return;
+    var ctx = c.getContext('2d');
+    var chars = '01XYVEN<>/\\[]{}#$%&*+=ABCDEF';
+    var cols, drops, size = 15;
+    function resize() {
+      c.width = window.innerWidth; c.height = window.innerHeight;
+      cols = Math.floor(c.width / size);
+      drops = new Array(cols).fill(0).map(function () { return Math.random() * -60; });
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    function draw() {
+      ctx.fillStyle = 'rgba(3,6,10,.09)';
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.font = size + 'px monospace';
+      for (var i = 0; i < cols; i++) {
+        var ch = chars[Math.floor(Math.random() * chars.length)];
+        var y = drops[i] * size;
+        ctx.fillStyle = Math.random() > 0.965 ? 'rgba(255,43,61,.85)' : 'rgba(0,255,156,.6)';
+        ctx.fillText(ch, i * size, y);
+        if (y > c.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i] += 0.55;
+      }
+    }
+    if (!RM) setInterval(draw, 62);
+  })();
+
+  /* ============ DRAGON INTRO ============ */
+  function drawDragon(ctx, cx, cy, scale, opts) {
+    var flap = opts.flap, mouthOpen = opts.mouthOpen, headTilt = opts.headTilt, glow = opts.glow, alpha = opts.alpha;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(cx, cy);
+    ctx.scale(scale, scale);
+
+    // Outer glow halo
+    if (glow > 0) {
+      var grd = ctx.createRadialGradient(0, 0, 20, 0, 0, 320);
+      grd.addColorStop(0, 'rgba(255,60,70,' + (0.30 * glow) + ')');
+      grd.addColorStop(0.5, 'rgba(180,10,25,' + (0.14 * glow) + ')');
+      grd.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(0, 0, 320, 0, Math.PI * 2); ctx.fill();
+    }
+
+    ctx.shadowColor = 'rgba(255,43,61,0.95)';
+    ctx.shadowBlur = 30 * glow;
+
+    var flapY = Math.sin(flap) * 22;
+
+    // ==== LEFT WING ====
+    ctx.fillStyle = 'rgba(12,0,3,0.98)';
+    ctx.beginPath();
+    ctx.moveTo(-40, -25);
+    ctx.quadraticCurveTo(-110, -105 + flapY, -230, -95 + flapY);
+    ctx.quadraticCurveTo(-190, -70 + flapY, -180, -30);
+    ctx.quadraticCurveTo(-165, -55 + flapY, -140, -15);
+    ctx.quadraticCurveTo(-125, -45 + flapY, -100, 5);
+    ctx.quadraticCurveTo(-95, -25 + flapY, -60, 10);
+    ctx.quadraticCurveTo(-70, -20 + flapY, -40, -25);
+    ctx.fill();
+
+    // ==== RIGHT WING ====
+    ctx.beginPath();
+    ctx.moveTo(40, -25);
+    ctx.quadraticCurveTo(110, -105 + flapY, 230, -95 + flapY);
+    ctx.quadraticCurveTo(190, -70 + flapY, 180, -30);
+    ctx.quadraticCurveTo(165, -55 + flapY, 140, -15);
+    ctx.quadraticCurveTo(125, -45 + flapY, 100, 5);
+    ctx.quadraticCurveTo(95, -25 + flapY, 60, 10);
+    ctx.quadraticCurveTo(70, -20 + flapY, 40, -25);
+    ctx.fill();
+
+    // ==== BODY ====
+    ctx.fillStyle = 'rgba(18,0,5,1)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 68, 48, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Body rim light
+    ctx.strokeStyle = 'rgba(255,70,90,0.55)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, 68, 48, 0, Math.PI * 1.05, Math.PI * 1.85);
+    ctx.stroke();
+
+    // Tail
+    ctx.fillStyle = 'rgba(18,0,5,1)';
+    ctx.beginPath();
+    ctx.moveTo(-45, 5);
+    ctx.quadraticCurveTo(-140, 30, -240, 60);
+    ctx.quadraticCurveTo(-260, 70, -280, 55);
+    ctx.quadraticCurveTo(-250, 45, -240, 20);
+    ctx.quadraticCurveTo(-150, 5, -45, -5);
+    ctx.closePath();
+    ctx.fill();
+    // Tail spike
+    ctx.beginPath();
+    ctx.moveTo(-278, 55);
+    ctx.lineTo(-300, 30);
+    ctx.lineTo(-280, 42);
+    ctx.lineTo(-310, 44);
+    ctx.lineTo(-285, 60);
+    ctx.closePath();
+    ctx.fill();
+
+    // ==== NECK + HEAD ====
+    ctx.save();
+    ctx.translate(55, -28);
+    ctx.rotate(headTilt);
+
+    // Neck
+    ctx.fillStyle = 'rgba(18,0,5,1)';
+    ctx.beginPath();
+    ctx.moveTo(-35, 20);
+    ctx.quadraticCurveTo(-5, -22, 28, -18);
+    ctx.lineTo(40, -5);
+    ctx.quadraticCurveTo(12, 6, -22, 30);
+    ctx.closePath();
+    ctx.fill();
+
+    // Head top
+    ctx.beginPath();
+    ctx.moveTo(28, -18);
+    ctx.quadraticCurveTo(90, -30, 112, -16);
+    ctx.quadraticCurveTo(118, -6, 100, 0);
+    ctx.lineTo(50, 2);
+    ctx.lineTo(36, -6);
+    ctx.closePath();
+    ctx.fill();
+
+    // Lower jaw (opens with mouthOpen)
+    ctx.save();
+    ctx.translate(50, -2);
+    ctx.rotate(mouthOpen * 0.55);
+    ctx.beginPath();
+    ctx.moveTo(-16, 0);
+    ctx.quadraticCurveTo(30, 8, 58, 14);
+    ctx.quadraticCurveTo(48, 24, 12, 18);
+    ctx.closePath();
+    ctx.fill();
+    // Teeth
+    ctx.fillStyle = 'rgba(255,230,210,0.85)';
+    for (var ti = 0; ti < 4; ti++) {
+      ctx.beginPath();
+      ctx.moveTo(20 + ti * 10, 4);
+      ctx.lineTo(24 + ti * 10, 4);
+      ctx.lineTo(22 + ti * 10, 10);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // Upper teeth
+    ctx.fillStyle = 'rgba(255,230,210,0.85)';
+    for (var ui = 0; ui < 4; ui++) {
+      ctx.beginPath();
+      ctx.moveTo(60 + ui * 10, -3);
+      ctx.lineTo(64 + ui * 10, -3);
+      ctx.lineTo(62 + ui * 10, 4);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Horns
+    ctx.strokeStyle = 'rgba(255,90,110,0.8)';
+    ctx.lineWidth = 3.2;
+    ctx.beginPath();
+    ctx.moveTo(42, -20);
+    ctx.quadraticCurveTo(32, -48, 60, -62);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(52, -22);
+    ctx.quadraticCurveTo(58, -46, 86, -52);
+    ctx.stroke();
+
+    // Eye — glowing red
+    ctx.shadowColor = '#ff2b3d';
+    ctx.shadowBlur = 40 * Math.max(glow, 0.5);
+    ctx.fillStyle = '#ff2b3d';
+    ctx.beginPath(); ctx.arc(78, -10, 4.2, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 60 * Math.max(glow, 0.5);
+    ctx.fillStyle = '#ff5e6e';
+    ctx.beginPath(); ctx.arc(78, -10, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
+
+    ctx.restore(); // head
+    ctx.restore(); // dragon
+  }
+
+  function runDragonIntro(skipToBoot) {
+    var canvas = document.getElementById('dragonCanvas');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var stage = document.getElementById('dragonStage');
+    var flashEl = document.getElementById('dragonFlash');
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resize();
+    var onResize = function () { resize(); };
+    window.addEventListener('resize', onResize);
+
+    var start = performance.now();
+    var fireParticles = [];
+    var embers = [];
+    var shards = [];
+    var rafId = null;
+    var finished = false;
+    var skipFlag = false;
+
+    // Ambient embers
+    for (var i = 0; i < 60; i++) {
+      embers.push({
+        x: Math.random(), y: Math.random(),
+        vx: (Math.random() - 0.5) * 0.06,
+        vy: -0.02 - Math.random() * 0.06,
+        size: 0.6 + Math.random() * 2.2,
+        a: 0.2 + Math.random() * 0.5
+      });
+    }
+
+    // Impact shards (spawn at 6.5s)
+    function spawnShards(cx, cy) {
+      for (var i = 0; i < 80; i++) {
+        var ang = Math.random() * Math.PI * 2;
+        var sp = 3 + Math.random() * 12;
+        shards.push({
+          x: cx, y: cy,
+          vx: Math.cos(ang) * sp,
+          vy: Math.sin(ang) * sp,
+          life: 1,
+          size: 1 + Math.random() * 3,
+          hue: 0 + Math.random() * 40
+        });
+      }
+    }
+
+    // Fire breath
+    function spawnFire(cx, cy, angle, count, spread, speed, sizeBase) {
+      for (var i = 0; i < count; i++) {
+        var a = angle + (Math.random() - 0.5) * spread;
+        var sp = speed * (0.6 + Math.random() * 0.9);
+        fireParticles.push({
+          x: cx, y: cy,
+          vx: Math.cos(a) * sp,
+          vy: Math.sin(a) * sp,
+          life: 1,
+          decay: 0.008 + Math.random() * 0.018,
+          size: sizeBase * (0.5 + Math.random()),
+          hue: 5 + Math.random() * 45
+        });
+      }
+    }
+
+    // Sound schedule
+    var soundTimers = [];
+    function scheduleSound(fn, atMs) {
+      soundTimers.push(setTimeout(fn, atMs));
+    }
+    scheduleSound(function () { Sound.roar(); }, 200);
+    scheduleSound(function () { Sound.whoosh(); }, 1800);
+    scheduleSound(function () { Sound.roar(); }, 3200);
+    scheduleSound(function () { Sound.fire(3); }, 4600);
+    scheduleSound(function () { Sound.impact(); }, 6500);
+    scheduleSound(function () { Sound.roar(); }, 7200);
+    scheduleSound(function () { Sound.harshSlam(); }, 9000);
+
+    // Trigger flash + shards at 6.5s
+    var impactTimer = setTimeout(function () {
+      if (skipFlag) return;
+      if (flashEl) { flashEl.classList.remove('go'); void flashEl.offsetWidth; flashEl.classList.add('go'); }
+      if (!RM) {
+        stage.classList.add('shake');
+        setTimeout(function () { stage.classList.remove('shake'); }, 700);
+      }
+      spawnShards(canvas.width / 2, canvas.height / 2);
+    }, 6500);
+
+    // Show XYVEN HARSH at 9s
+    var harshTimer = setTimeout(function () {
+      if (skipFlag) return;
+      var wrap = document.getElementById('harshWrap');
+      if (wrap) wrap.classList.add('show');
+      var sw = document.getElementById('shockwave');
+      if (sw) { sw.classList.remove('go'); void sw.offsetWidth; sw.classList.add('go'); }
+      if (flashEl) { flashEl.classList.remove('go'); void flashEl.offsetWidth; flashEl.classList.add('go'); }
+    }, 9000);
+
+    // Auto-transition at 10s
+    var endTimer = setTimeout(function () {
+      finish();
+    }, 10000);
+
+    function finish() {
+      if (finished) return;
+      finished = true;
+      cancelAnimationFrame(rafId);
+      clearTimeout(impactTimer);
+      clearTimeout(harshTimer);
+      clearTimeout(endTimer);
+      soundTimers.forEach(function (t) { clearTimeout(t); });
+      window.removeEventListener('resize', onResize);
+      if (skipToBoot) skipToBoot();
+    }
+
+    function skip() {
+      if (finished) return;
+      skipFlag = true;
+      finish();
+    }
+
+    document.getElementById('skipDragon').addEventListener('click', skip, { once: true });
+
+    function frame(now) {
+      if (finished) return;
+      var t = (now - start) / 1000;
+      var W = canvas.width, H = canvas.height;
+      var cx = W / 2, cy = H / 2;
+
+      // Motion blur trail
+      ctx.fillStyle = 'rgba(0,0,0,0.24)';
+      ctx.fillRect(0, 0, W, H);
+
+      // ====== PHASE 1 (0-1.5s): distant glow, eyes ======
+      var eyeGlow = Math.min(1, t / 1.5);
+      var dragonAlpha = Math.min(1, Math.max(0, (t - 0.6) / 1.2));
+      var dragonScale = 1.35 - Math.min(0.35, t * 0.25);
+      var dragonX = cx + (1 - Math.min(1, t / 2.2)) * (-W * 0.55);
+      var dragonY = cy + Math.sin(t * 1.6) * 12;
+
+      // ====== PHASE 3 (3-4.5s): rear back, mouth opens ======
+      var mouthOpen = t < 3 ? 0 : Math.min(1, (t - 3) / 1.3);
+
+      // ====== PHASE 4 (4.5-6.5s): fire breath ======
+      var firing = t > 4.4 && t < 6.7;
+
+      // ====== PHASE 5 (6.5-8s): chaos, dragon roars ======
+      var chaos = t > 6.4 && t < 8.2;
+
+      // ====== PHASE 6 (8-10s): fading ======
+      var fade = t > 8.4 ? Math.max(0, 1 - (t - 8.4) / 1.4) : 1;
+      dragonAlpha *= fade;
+
+      // Dragon position during attack phases
+      if (t > 2.2 && t < 6.8) {
+        dragonX = cx + Math.sin(t * 1.1) * 30;
+      }
+
+      var flapPhase = t * 6.5;
+      var headTilt = -0.1 + Math.sin(t * 2) * 0.06;
+
+      // Draw dragon
+      if (dragonAlpha > 0.02) {
+        drawDragon(ctx, dragonX, dragonY, dragonScale, {
+          flap: flapPhase,
+          mouthOpen: mouthOpen,
+          headTilt: headTilt,
+          glow: 0.4 + eyeGlow * 0.6,
+          alpha: dragonAlpha
+        });
+      }
+
+      // Mouth position (world coords) for fire spawn
+      var mouthX = dragonX + (110 * dragonScale) * Math.cos(headTilt);
+      var mouthY = dragonY + (-18 * dragonScale) + (10 * dragonScale) * mouthOpen;
+
+      // Spawn fire particles
+      if (firing) {
+        var intensity = 1;
+        if (t > 5.8) intensity = 1.6;
+        for (var fi = 0; fi < 22 * intensity; fi++) {
+          spawnFire(mouthX, mouthY, headTilt + 0.02, 1, 0.55, 14, 14);
+        }
+      }
+
+      // Update + draw fire
+      for (var i = fireParticles.length - 1; i >= 0; i--) {
+        var p = fireParticles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vx *= 0.985;
+        p.vy *= 0.985;
+        p.vy -= 0.02;
+        p.life -= p.decay;
+        if (p.life <= 0) { fireParticles.splice(i, 1); continue; }
+        var al = p.life;
+        var sz = p.size * (0.4 + p.life * 0.9);
+        var hue = p.hue;
+        ctx.globalCompositeOperation = 'lighter';
+        var g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, sz);
+        g.addColorStop(0, 'hsla(' + (hue + 30) + ',100%,85%,' + al + ')');
+        g.addColorStop(0.35, 'hsla(' + hue + ',100%,60%,' + (al * 0.85) + ')');
+        g.addColorStop(1, 'hsla(' + (hue + 10) + ',100%,20%,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, sz, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = 'source-over';
+      }
+
+      // Ambient embers
+      ctx.globalCompositeOperation = 'lighter';
+      for (var ei = 0; ei < embers.length; ei++) {
+        var e = embers[ei];
+        e.x += e.vx / 1000;
+        e.y += e.vy / 1000;
+        if (e.y < 0 || e.x < 0 || e.x > 1) {
+          e.x = Math.random(); e.y = 1 + Math.random() * 0.1;
+        }
+        var ex = e.x * W, ey = e.y * H;
+        ctx.fillStyle = 'rgba(255,90,80,' + e.a + ')';
+        ctx.beginPath();
+        ctx.arc(ex, ey, e.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalCompositeOperation = 'source-over';
+
+      // Shards (impact)
+      for (var si = shards.length - 1; si >= 0; si--) {
+        var s = shards[si];
+        s.x += s.vx;
+        s.y += s.vy;
+        s.vy += 0.35;
+        s.vx *= 0.97;
+        s.life -= 0.018;
+        if (s.life <= 0) { shards.splice(si, 1); continue; }
+        ctx.fillStyle = 'hsla(' + s.hue + ',100%,' + (45 + s.life * 30) + '%,' + s.life + ')';
+        ctx.fillRect(s.x, s.y, s.size, s.size * 3);
+      }
+
+      // Chaos screen tint
+      if (chaos) {
+        var tintAlpha = Math.max(0, 1 - (t - 6.4) / 1.8) * 0.35;
+        ctx.fillStyle = 'rgba(255,60,40,' + tintAlpha + ')';
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      rafId = requestAnimationFrame(frame);
+    }
+
+    rafId = requestAnimationFrame(frame);
+  }
+
+  /* ============ TAP TO START ============ */
+  document.getElementById('tapStart').addEventListener('click', function () {
+    Sound.init();
+    Sound.resume();
+    Sound.tone(800, 0.06, 'square', 0.08);
+    setTimeout(function () { Sound.tone(1400, 0.08, 'square', 0.07); }, 60);
+    setTimeout(function () { Sound.tone(2200, 0.10, 'square', 0.06); }, 130);
+    setTimeout(function () { Sound.roar(); }, 260);
+
+    showScreen('stage-dragon');
+    runDragonIntro(function () {
+      showScreen('stage-boot');
+      runBoot();
+    });
+  });
+
+  /* ============ STATE ============ */
+  var state = { consent: null, phone: null, country: '+91', otpVerified: false, device: null, sessionId: null, events: [] };
+  function nowTime() {
+    var d = new Date();
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + ':' + String(d.getSeconds()).padStart(2, '0');
+  }
+  function pushEvent(label, kind) { state.events.push({ label: label, kind: kind || 'ok', at: nowTime() }); renderTimeline(); }
+  function renderTimeline() {
+    var box = $('#timeline');
+    if (!box) return;
+    box.innerHTML = '';
+    state.events.forEach(function (e) {
+      var d = document.createElement('div');
+      d.className = 'tl-item' + (e.kind === 'ok' ? '' : ' ' + e.kind);
+      var t = document.createElement('span'); t.className = 'tl-time'; t.textContent = e.at;
+      var l = document.createElement('span'); l.className = 'tl-label'; l.textContent = e.label;
+      d.appendChild(t); d.appendChild(l);
+      box.appendChild(d);
+    });
+  }
+
+  /* ============ BOOT ============ */
+  var BOOT_LINES = ['INITIALIZING XYVEN WORLD...', 'CONNECTING TO XYVEN CORE...', 'SECURITY MODULE LOADING...', 'ESTABLISHING SECURE SESSION...'];
+
+  async function runBoot() {
+    var term = $('#bootTerm');
+    term.innerHTML = '';
+    $('#bootHead').classList.add('hidden');
+    $('#accessTag').classList.add('hidden');
+    $('#enterWrap').classList.add('hidden');
+
+    for (var i = 0; i < BOOT_LINES.length; i++) {
+      var line = document.createElement('div');
+      line.className = 'line';
+      line.innerHTML = '<span class="prompt"></span><span class="txt"></span>';
+      term.appendChild(line);
+      await typeText(line.querySelector('.txt'), BOOT_LINES[i], 16);
+      Sound.hover();
+      var tag = document.createElement('span');
+      tag.className = 'tag ok';
+      tag.textContent = '[ OK ]';
+      line.appendChild(tag);
+      await sleep(140);
+    }
+    await sleep(320);
+    var head = $('#bootHead');
+    head.classList.remove('hidden');
+    await typeText($('#headText'), 'HYY THIS IS XYVEN WORLD', 58);
+    await sleep(420);
+    var acc = $('#accessTag');
+    acc.classList.remove('hidden');
+    Sound.impact();
+    shake();
+    await sleep(1200);
+    $('#enterWrap').classList.remove('hidden');
+  }
+
+  $('#enterBtn').addEventListener('click', function () {
+    flash();
+    showScreen('stage-security');
+    runSecurity();
+  });
+
+  /* ============ SECURITY ============ */
+  var STEPS = ['Initializing session', 'Verifying browser', 'Checking connection', 'Preparing secure environment', 'Creating protected session'];
+  var LABELS = ['INITIALIZING', 'VERIFYING BROWSER', 'CHECKING CONNECTION', 'PREPARING ENVIRONMENT', 'CREATING SESSION', 'FINALIZING'];
+
+  function buildSteps() {
+    var list = $('#stepList');
+    list.innerHTML = '';
+    STEPS.forEach(function (s, i) {
+      var row = document.createElement('div');
+      row.className = 'step';
+      row.id = 'step-' + i;
+      row.innerHTML = '<span class="idx">[' + String(i + 1).padStart(2, '0') + ']</span><span class="lbl">' + s + '</span><span class="st">PENDING</span><span class="check">✓</span>';
+      list.appendChild(row);
+    });
+  }
+  function setStep(i, mode) {
+    var row = document.getElementById('step-' + i);
+    if (!row) return;
+    row.classList.remove('active', 'done');
+    if (mode === 'active') { row.classList.add('active'); row.querySelector('.st').textContent = 'RUNNING'; }
+    if (mode === 'done') { row.classList.add('done'); row.querySelector('.st').textContent = 'COMPLETE ✓'; }
+  }
+  function animateProgress(from, to, duration) {
+    return new Promise(function (resolve) {
+      var fill = $('#progFill'), pct = $('#progPct');
+      var start = performance.now();
+      var dur = RM ? 80 : duration;
+      function frame(now) {
+        var p = Math.min(1, (now - start) / dur);
+        var eased = 1 - Math.pow(1 - p, 3);
+        var val = from + (to - from) * eased;
+        fill.style.width = val + '%';
+        pct.textContent = Math.round(val) + '%';
+        if (val < 40) fill.className = 'progress-fill';
+        else if (val < 75) fill.className = 'progress-fill orange';
+        else fill.className = 'progress-fill green';
+        if (p < 1) requestAnimationFrame(frame); else resolve();
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+  async function runSecurity() {
+    buildSteps();
+    $('#verifiedList').classList.add('hidden');
+    var fill = $('#progFill');
+    fill.className = 'progress-fill';
+    fill.style.width = '0%';
+    $('#progPct').textContent = '0%';
+
+    for (var i = 0; i < STEPS.length; i++) {
+      setStep(i, 'active');
+      $('#progLabel').textContent = LABELS[i];
+      Sound.hover();
+      await animateProgress(i * 20, (i + 1) * 20, 780);
+      setStep(i, 'done');
+      await sleep(150);
+    }
+    $('#progLabel').textContent = LABELS[5];
+    await sleep(400);
+    var vl = $('#verifiedList');
+    vl.classList.remove('hidden');
+    flash();
+    Sound.tone(1200, 0.08, 'square', 0.06);
+    setTimeout(function () { Sound.tone(1600, 0.08, 'square', 0.06); }, 100);
+    setTimeout(function () { Sound.tone(2200, 0.12, 'square', 0.06); }, 200);
+    await sleep(1700);
+    showScreen('stage-consent');
+  }
+
+  /* ============ CONSENT ============ */
+  async function submitConsent(granted) {
+    try {
+      var res = await API('/api/consent', { method: 'POST', body: JSON.stringify({ granted: granted }) });
+      state.consent = res.consent;
+      state.sessionId = res.sessionId;
+      pushEvent(granted ? 'CONSENT RECEIVED' : 'CONSENT DECLINED — LIMITED MODE', granted ? 'ok' : 'warn');
+    } catch (e) {
+      toast('Consent could not be recorded: ' + e.message, true);
+      state.consent = granted ? 'granted' : 'declined';
+      pushEvent(granted ? 'CONSENT RECEIVED (LOCAL)' : 'CONSENT DECLINED (LOCAL)', 'warn');
+    }
+    flash();
+    if (granted) showScreen('stage-phone');
+    else { await collectDevice(); showScreen('stage-device'); }
+  }
+  $('#consentAllow').addEventListener('click', function () { submitConsent(true); });
+  $('#consentDeny').addEventListener('click', function () { submitConsent(false); });
+
+  /* ============ PHONE ============ */
+  var country = $('#country'), cc = $('#cc'), phone = $('#phone'), phoneConsent = $('#phoneConsent'), phoneBtn = $('#phoneContinue');
+  country.addEventListener('change', function () { cc.value = country.value; state.country = country.value; });
+  function validatePhone() {
+    var v = phone.value.replace(/\D/g, '');
+    phoneBtn.disabled = !(v.length >= 6 && v.length <= 15 && phoneConsent.checked);
+  }
+  phone.addEventListener('input', function () { phone.value = phone.value.replace(/[^\d\s-]/g, ''); validatePhone(); });
+  phoneConsent.addEventListener('change', validatePhone);
+
+  $('#phoneSkip').addEventListener('click', async function () { await collectDevice(); showScreen('stage-device'); });
+
+  phoneBtn.addEventListener('click', async function () {
+    var digits = phone.value.replace(/\D/g, '');
+    if (!phoneConsent.checked) { toast('Please confirm the consent checkbox.', true); triggerAlarm('⚠ CONSENT REQUIRED'); return; }
+    if (digits.length < 6 || digits.length > 15) { toast('Invalid phone number.', true); triggerAlarm('⚠ INVALID PHONE NUMBER'); return; }
+    phoneBtn.disabled = true;
+    phoneBtn.textContent = 'SENDING…';
+    try {
+      var res = await API('/api/phone/request-otp', { method: 'POST', body: JSON.stringify({ country: cc.value, phone: digits }) });
+      state.phone = cc.value + ' ' + digits;
+      $('#otpTarget').textContent = state.phone;
+      pushEvent('VERIFICATION CODE DISPATCHED', 'ok');
+      if (res.demo && res.devCode) {
+        $('#otpDemoNote').classList.remove('hidden');
+        $('#otpDemoNote').innerHTML = '<b>DEMO / DEVELOPMENT MODE</b> — no SMS provider configured. Your test code is <span class="neon" style="font-size:15px;letter-spacing:.3em">' + res.devCode + '</span><br/>In production this code is hashed with a server secret (never stored in plaintext) and delivered by SMS.';
+      } else {
+        $('#otpDemoNote').classList.add('hidden');
+      }
+      flash();
+      showScreen('stage-otp');
+      var first = document.querySelector('.otp-box');
+      if (first) setTimeout(function () { first.focus(); }, 300);
+    } catch (e) {
+      toast(e.message || 'Could not request a code.', true);
+      triggerAlarm('⚠ ' + (e.message || 'REQUEST FAILED').toUpperCase().slice(0, 40));
+    } finally {
+      phoneBtn.disabled = false;
+      phoneBtn.textContent = 'SEND VERIFICATION CODE →';
+      validatePhone();
+    }
+  });
+
+  /* ============ OTP ============ */
+  var otpBoxes = Array.prototype.slice.call(document.querySelectorAll('.otp-box'));
+  otpBoxes.forEach(function (box, i) {
+    box.addEventListener('input', function () {
+      box.value = box.value.replace(/\D/g, '').slice(0, 1);
+      if (box.value && i < otpBoxes.length - 1) otpBoxes[i + 1].focus();
+    });
+    box.addEventListener('keydown', function (e) {
+      if (e.key === 'Backspace' && !box.value && i > 0) otpBoxes[i - 1].focus();
+      if (e.key === 'ArrowLeft' && i > 0) otpBoxes[i - 1].focus();
+      if (e.key === 'ArrowRight' && i < otpBoxes.length - 1) otpBoxes[i + 1].focus();
+    });
+    box.addEventListener('paste', function (e) {
+      var d = (e.clipboardData || window.clipboardData).getData('text') || '';
+      d = d.replace(/\D/g, '').slice(0, 6);
+      if (!d) return;
+      e.preventDefault();
+      d.split('').forEach(function (ch, j) { if (otpBoxes[j]) otpBoxes[j].value = ch; });
+      otpBoxes[Math.min(d.length, 5)].focus();
+    });
+  });
+  function otpValue() { return otpBoxes.map(function (b) { return b.value; }).join(''); }
+
+  $('#otpVerify').addEventListener('click', async function () {
+    var code = otpValue();
+    if (code.length !== 6) { toast('Enter all 6 digits.', true); triggerAlarm('⚠ INCOMPLETE CODE'); return; }
+    var btn = this;
+    btn.disabled = true; btn.textContent = 'VERIFYING…';
+    try {
+      await API('/api/phone/verify-otp', { method: 'POST', body: JSON.stringify({ code: code }) });
+      state.otpVerified = true;
+      pushEvent('PHONE VERIFIED', 'ok');
+      toast('Phone verified successfully.');
+      flash();
+      Sound.tone(1400, 0.06, 'square', 0.06);
+      setTimeout(function () { Sound.tone(2000, 0.08, 'square', 0.06); }, 80);
+      await collectDevice();
+      showScreen('stage-device');
+      renderDevice();
+    } catch (e) {
+      toast(e.message || 'Verification failed.', true);
+      triggerAlarm('⚠ ACCESS DENIED — INVALID CODE');
+      otpBoxes.forEach(function (b) { b.value = ''; });
+      otpBoxes[0].focus();
+    } finally {
+      btn.disabled = false; btn.textContent = 'VERIFY';
+    }
+  });
+
+  $('#otpResend').addEventListener('click', async function () {
+    if (!state.phone) return;
+    try {
+      var digits = state.phone.replace(/\D/g, '').replace(/^91/, '');
+      var res = await API('/api/phone/request-otp', { method: 'POST', body: JSON.stringify({ country: cc.value, phone: digits.length >= 6 ? digits : state.phone.replace(/\D/g, '') }) });
+      if (res.demo && res.devCode) {
+        $('#otpDemoNote').innerHTML = '<b>DEMO / DEVELOPMENT MODE</b> — new test code: <span class="neon" style="font-size:15px;letter-spacing:.3em">' + res.devCode + '</span>';
+      }
+      toast('A new code has been generated.');
+      pushEvent('VERIFICATION CODE RE-SENT', 'warn');
+    } catch (e) { toast(e.message, true); triggerAlarm('⚠ RESEND FAILED'); }
+  });
+
+  /* ============ DEVICE ============ */
+  function detectBrowser() {
+    var ua = navigator.userAgent, m;
+    if ((m = ua.match(/Edg\/([\d.]+)/))) return { name: 'Microsoft Edge', version: m[1] };
+    if ((m = ua.match(/OPR\/([\d.]+)/))) return { name: 'Opera', version: m[1] };
+    if ((m = ua.match(/Chrome\/([\d.]+)/))) return { name: 'Chrome', version: m[1] };
+    if ((m = ua.match(/Firefox\/([\d.]+)/))) return { name: 'Firefox', version: m[1] };
+    if ((m = ua.match(/Version\/([\d.]+).*Safari/))) return { name: 'Safari', version: m[1] };
+    return { name: 'Unknown browser', version: '—' };
+  }
+  function detectOS() {
+    var ua = navigator.userAgent;
+    if (/Windows NT 10/.test(ua)) return 'Windows 10/11';
+    if (/Windows NT/.test(ua)) return 'Windows';
+    if (/Android/.test(ua)) return 'Android';
+    if (/iPhone|iPad|iPod/.test(ua)) return 'iOS / iPadOS';
+    if (/Mac OS X/.test(ua)) return 'macOS';
+    if (/Linux/.test(ua)) return 'Linux';
+    return 'Unknown';
+  }
+  function detectType() {
+    var ua = navigator.userAgent;
+    if (/iPad|Tablet/i.test(ua)) return 'Tablet';
+    if (/Mobi|Android|iPhone/i.test(ua)) return 'Mobile';
+    return 'Desktop';
+  }
+  function tz() { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || '—'; } catch (e) { return '—'; } }
+
+  async function collectDevice() {
+    var b = detectBrowser();
+    state.device = {
+      deviceType: detectType(), browser: b.name, browserVersion: b.version, os: detectOS(),
+      screenResolution: (window.screen && screen.width ? window.screen.width + ' × ' + window.screen.height : '—'),
+      viewport: window.innerWidth + ' × ' + window.innerHeight,
+      language: navigator.language || '—', timezone: tz(), online: navigator.onLine ? 'Online' : 'Offline'
+    };
+    try {
+      await API('/api/device', { method: 'POST', body: JSON.stringify(state.device) });
+      pushEvent('DEVICE PROFILE CREATED', 'ok');
+    } catch (e) { pushEvent('DEVICE PROFILE (LOCAL ONLY)', 'warn'); }
+  }
+
+  function renderDevice() {
+    var grid = $('#deviceGrid');
+    grid.innerHTML = '';
+    var d = state.device || {};
+    var rows = [
+      ['DEVICE TYPE', d.deviceType], ['BROWSER', d.browser], ['BROWSER VERSION', d.browserVersion],
+      ['OPERATING SYSTEM', d.os], ['SCREEN RESOLUTION', d.screenResolution], ['VIEWPORT', d.viewport],
+      ['LANGUAGE', d.language], ['TIMEZONE', d.timezone], ['ONLINE STATUS', d.online]
+    ];
+    rows.forEach(function (r) {
+      var card = document.createElement('div');
+      card.className = 'data-card';
+      var left = document.createElement('div');
+      left.innerHTML = '<div class="k">' + r[0] + '</div><div class="v">' + (r[1] || '—') + '</div>';
+      var chip = document.createElement('span');
+      chip.className = 'chip ok';
+      chip.textContent = 'AVAILABLE ✓';
+      card.appendChild(left); card.appendChild(chip);
+      grid.appendChild(card);
+    });
+  }
+
+  $('#permCheck').addEventListener('click', async function () {
+    if (!navigator.permissions || !navigator.permissions.query) {
+      toast('Permission state API is unavailable in this browser.', true);
+      triggerAlarm('⚠ PERMISSION API UNAVAILABLE');
+      return;
+    }
+    var names = ['geolocation', 'notifications', 'camera', 'microphone'];
+    var grid = $('#deviceGrid');
+    for (var i = 0; i < names.length; i++) {
+      var name = names[i];
+      var chipText = 'NOT PROVIDED —', chipClass = 'na';
+      try {
+        var st = await navigator.permissions.query({ name: name });
+        if (st.state === 'granted') { chipText = 'AVAILABLE ✓'; chipClass = 'ok'; }
+        else if (st.state === 'denied') { chipText = 'PERMISSION DENIED ⚠'; chipClass = 'warn'; }
+      } catch (e) { chipText = 'NOT SUPPORTED —'; chipClass = 'na'; }
+      var card = document.createElement('div');
+      card.className = 'data-card';
+      card.innerHTML = '<div><div class="k">' + name.toUpperCase() + ' PERMISSION</div><div class="v">Read-only state query</div></div>';
+      var chip = document.createElement('span');
+      chip.className = 'chip ' + chipClass;
+      chip.textContent = chipText;
+      card.appendChild(chip);
+      grid.appendChild(card);
+      if (chipClass === 'warn') pushEvent(name.toUpperCase() + ' PERMISSION DECLINED — LIMITED ACCESS MODE', 'warn');
+    }
+    toast('Permission states refreshed (read-only, nothing was requested).');
+  });
+
+  $('#deviceContinue').addEventListener('click', async function () { flash(); await enterDashboard(); });
+
+  /* ============ DASHBOARD ============ */
+  function animateScore(target) {
+    var ring = $('#scoreRing'), num = $('#scoreVal');
+    var circumference = 540.35;
+    var offset = circumference - (circumference * target / 100);
+    setTimeout(function () { ring.style.strokeDashoffset = offset; }, 120);
+    var start = performance.now(), dur = RM ? 100 : 1600;
+    function step(now) {
+      var p = Math.min(1, (now - start) / dur);
+      num.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  async function enterDashboard() {
+    showScreen('stage-dash');
+    animateScore(98);
+    pushEvent('SECURITY PROFILE GENERATED', 'ok');
+    pushEvent('XYVEN PROTECTION ACTIVE', 'ok');
+    try {
+      var me = await API('/api/me');
+      state.sessionId = me.sessionId || state.sessionId;
+      $('#sessionId').textContent = state.sessionId || '—';
+      $('#dashSessionShort').textContent = (state.sessionId || '').slice(0, 10).toUpperCase() || '—';
+      $('#badgeId').textContent = (state.sessionId || '').slice(0, 12).toUpperCase() || '—';
+      $('#sessionConsent').textContent = (me.consent || state.consent || 'not recorded').toUpperCase();
+      $('#sessionPhone').textContent = me.phone || (state.phone ? state.phone + ' (pending)' : 'not shared');
+      $('#sessionOtp').textContent = me.otpVerified || state.otpVerified ? 'VERIFIED ✓' : 'NOT VERIFIED —';
+      $('#sessionCreated').textContent = me.createdAt ? new Date(me.createdAt).toLocaleString() : new Date().toLocaleString();
+      $('#pvConsent').textContent = (me.consent || state.consent || 'not recorded').toUpperCase();
+      $('#pvCollected').textContent = me.collected && me.collected.length ? me.collected.join(', ') : 'Session identifier only';
+    } catch (e) {
+      $('#sessionId').textContent = 'local-session';
+      $('#pvCollected').textContent = 'Session identifier only (offline mode)';
+      $('#pvConsent').textContent = (state.consent || 'not recorded').toUpperCase();
+    }
+    printConsole([
+      { t: 'XYVEN secure shell ready.', c: 'sys' },
+      { t: 'Type "help" to list available commands.', c: 'dim' }
+    ]);
+  }
+
+  function printConsole(lines) {
+    var out = $('#consoleOut');
+    lines.forEach(function (l) {
+      var d = document.createElement('div');
+      d.className = 'l' + (l.c ? ' ' + l.c : '');
+      d.textContent = l.t;
+      out.appendChild(d);
+    });
+    out.scrollTop = out.scrollHeight;
+  }
+
+  var COMMANDS = {
+    help: function () { return [{ t: 'AVAILABLE COMMANDS', c: 'sys' }, { t: '  status    — core system status' }, { t: '  security  — security posture' }, { t: '  session   — session information' }, { t: '  identity  — consent & identity state' }, { t: '  events    — security event timeline' }, { t: '  whoami    — current session id' }, { t: '  clear     — clear terminal' }]; },
+    status: function () { return [{ t: 'XYVEN CORE ........ ONLINE', c: 'sys' }, { t: 'API ............... ONLINE', c: 'sys' }, { t: 'AUTH .............. ONLINE', c: 'sys' }, { t: 'SECURITY .......... ACTIVE', c: 'sys' }]; },
+    security: function () { return [{ t: 'SECURITY STATUS .... PROTECTED' }, { t: 'THREAT LEVEL ....... NONE DETECTED' }, { t: 'PERMISSIONS ........ ' + (state.consent === 'granted' ? 'CONSENTED SCOPE ONLY' : 'LIMITED ACCESS MODE') }]; },
+    session: function () { return [{ t: 'SESSION ............ SECURE' }, { t: 'SESSION ID ......... ' + (state.sessionId || 'local') }, { t: 'CREATED ............ ' + new Date().toLocaleString() }]; },
+    identity: function () { return [{ t: 'CONSENT ............ ' + (state.consent === 'granted' ? 'VERIFIED' : 'DECLINED / LIMITED') }, { t: 'PHONE .............. ' + (state.otpVerified ? 'VERIFIED' : (state.phone ? 'PENDING' : 'NOT SHARED')) }, { t: 'DEVICE PROFILE ..... ' + (state.device ? 'CREATED' : 'NOT CREATED') }]; },
+    events: function () { if (!state.events.length) return [{ t: 'NO EVENTS RECORDED', c: 'dim' }]; return state.events.map(function (e) { return { t: e.at + '  ' + e.label, c: e.kind === 'ok' ? '' : 'err' }; }); },
+    whoami: function () { return [{ t: 'xyven-session:' + (state.sessionId || 'local'), c: 'sys' }]; },
+    clear: function () { $('#consoleOut').innerHTML = ''; return []; },
+    score: function () { return [{ t: 'SECURITY SCORE .... 98%', c: 'sys' }]; }
+  };
+
+  var consoleInput = $('#consoleInput');
+  consoleInput.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter') return;
+    var raw = consoleInput.value.trim();
+    consoleInput.value = '';
+    if (!raw) return;
+    printConsole([{ t: 'xyven@world:~$ ' + raw, c: 'dim' }]);
+    var cmd = raw.toLowerCase().split(/\s+/)[0];
+    var fn = COMMANDS[cmd];
+    if (!fn) { printConsole([{ t: 'command not found: ' + cmd + ' — type "help"', c: 'err' }]); triggerAlarm('⚠ UNKNOWN COMMAND'); return; }
+    var lines = fn();
+    if (lines.length) printConsole(lines);
+  });
+
+  /* ============ PRIVACY ============ */
+  $('#downloadData').addEventListener('click', async function () {
+    try {
+      var me = await API('/api/me');
+      var blob = new Blob([JSON.stringify(me, null, 2)], { type: 'application/json' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'xyven-my-data.json';
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+      toast('Your stored data has been downloaded.');
+    } catch (e) { toast('Could not export data: ' + e.message, true); triggerAlarm('⚠ EXPORT FAILED'); }
+  });
+
+  $('#deleteData').addEventListener('click', async function () {
+    if (!window.confirm('Delete / anonymize all data XYVEN stores for this session?')) return;
+    try {
+      await API('/api/me', { method: 'DELETE' });
+      toast('Your data has been deleted / anonymized.');
+      pushEvent('USER DATA DELETED / ANONYMIZED', 'bad');
+      $('#sessionPhone').textContent = 'deleted';
+      $('#sessionConsent').textContent = 'REVOKED';
+      $('#pvConsent').textContent = 'REVOKED';
+      $('#pvCollected').textContent = 'Session identifier only';
+    } catch (e) { toast('Delete failed: ' + e.message, true); triggerAlarm('⚠ DELETE FAILED'); }
+  });
+
+})();
+</script>
+</body>
+</html>
